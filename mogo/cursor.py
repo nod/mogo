@@ -4,6 +4,7 @@ that a result dict is wrapped in a Model to keep everything
 clean.
 """
 
+from pymongo.collection import Collection
 from pymongo.cursor import Cursor as PyCursor
 from pymongo import ASCENDING, DESCENDING
 
@@ -12,21 +13,24 @@ ASC = ASCENDING
 DESC = DESCENDING
 
 
-class Cursor(PyCursor):
-    """ A simple wrapper around pymongo's Cursor class. """
+class Cursor:
+    """ A simple proxy to pymongo's Cursor class. """
 
     def __init__(self, model, spec=None, *args, **kwargs):
+        from .model import Model
         self._order_entries = []
         self._query = spec
         self._model = model
-        PyCursor.__init__(
-            self, model._get_collection(), spec, *args, **kwargs)
+        # there are times we're called with a model, other times it's from
+        # within the pymongo lib and we get called with a collection instead of
+        # a model
+        self._pycur = PyCursor(model._get_collection(), spec, *args, **kwargs)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        value = super(Cursor, self).next()
+        value = self._pycur.next()
         return self._model(**value)
 
     def next(self):
@@ -36,16 +40,19 @@ class Cursor(PyCursor):
 
     # convenient because if it quacks like a list...
     def __len__(self):
-        return self.count()
+        return self._pycur.count()
+
+    def count(self):
+        return self._pycur.count()
 
     def __getitem__(self, *args, **kwargs):
-        value = PyCursor.__getitem__(self, *args, **kwargs)
+        value = self._pycur.__getitem__(*args, **kwargs)
         if type(value) == self.__class__:
             return value
         return self._model(**value)
 
     def first(self):
-        if self.count() == 0:
+        if self.__len__() == 0:
             return None
         return self[0]
 
@@ -58,7 +65,7 @@ class Cursor(PyCursor):
             self._order_entries.append((key, value))
             # According to the docs, only the LAST .sort() matters to
             # pymongo, so this SHOULD be safe
-            self.sort(self._order_entries)
+            self._pycur.sort(self._order_entries)
         return self
 
     def update(self, modifier):

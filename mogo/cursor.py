@@ -71,6 +71,10 @@ class Cursor:
     def sort(self, key, direction=ASC):
         return self.order(**{key:direction})
 
+    def rawsort(self, sort_args):
+        self._pycur.sort(sort_args)
+        return self
+
     def update(self, modifier):
         if self._query is None:
             raise ValueError(

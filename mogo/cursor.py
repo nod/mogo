@@ -68,6 +68,9 @@ class Cursor:
             self._pycur.sort(self._order_entries)
         return self
 
+    def sort(self, key, direction=ASC):
+        return self.order([key,direction])
+
     def update(self, modifier):
         if self._query is None:
             raise ValueError(

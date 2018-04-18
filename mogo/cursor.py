@@ -69,7 +69,7 @@ class Cursor:
         return self
 
     def sort(self, key, direction=ASC):
-        return self.order([key,direction])
+        return self.order(**{key:direction})
 
     def update(self, modifier):
         if self._query is None:

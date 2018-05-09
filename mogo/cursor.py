@@ -57,7 +57,7 @@ class Cursor:
         return self[0]
 
     def order(self, **kwargs):
-        if len(kwargs) != 1:
+        if len(kwargs) < 1:
             raise ValueError("order() requires one field = ASC or DESC.")
         for key, value in kwargs.items():
             if value not in (ASC, DESC):

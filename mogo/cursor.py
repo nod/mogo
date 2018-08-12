@@ -68,11 +68,11 @@ class Cursor:
             self._pycur.sort(self._order_entries)
         return self
 
-    def limit(self, **kwargs):
-        self._pycur.limit(**kwargs)
+    def limit(self, *args, **kwargs):
+        self._pycur.limit(*args, **kwargs)
 
-    def skip(self, **kwargs):
-        self._pycur.skip(**kwargs)
+    def skip(self, *args, **kwargs):
+        self._pycur.skip(*args, **kwargs)
 
     def sort(self, key, direction=ASC):
         return self.order(**{key:direction})
